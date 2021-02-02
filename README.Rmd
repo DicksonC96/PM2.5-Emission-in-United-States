@@ -1,0 +1,143 @@
+---
+title: 'PM2.5 Emission in United States from 1999 to 2008'
+author: 'DicksonC'
+output: html_document
+---
+
+# PM2.5 Emission in United States from 1999 to 2008
+Data source: [EPA National Emissions Inventory](https://www.epa.gov/technical-air-pollution-resources)  
+Project description adapted from https://datascience-enthusiast.com/R/EPA_R.html.  
+
+Fine particulate matter (PM2.5) is an ambient air pollutant for which there is strong evidence that it is harmful to human health. In the United States, the Environmental Protection Agency (EPA) is tasked with setting national ambient air quality standards for fine PM and for tracking the emissions of this pollutant into the atmosphere. Approximatly every 3 years, the EPA releases its database on emissions of PM2.5. This database is known as the National Emissions Inventory (NEI). You can read more information about the NEI at the EPA National Emissions Inventory web site.  
+
+For each year and for each type of PM source, the NEI records how many tons of PM2.5 were emitted from that source over the course of the entire year.  
+
+* PM2.5 Emissions Data (summarySCC_PM25.rds) contains a data frame with all of the PM2.5 emissions data for 1999, 2002, 2005, and 2008. For each year, the table contains number of tons of PM2.5 emitted from a specific type of source for the entire year.  
+* Source Classification Code Table (Source_Classification_Code.rds) provides a mapping from the SCC digit strings in the Emissions table to the actual name of the PM2.5 source, categorized into various ways.  
+
+### Reading in data
+```{r nei, cache=TRUE}
+NEI <- readRDS("../data/summarySCC_PM25.rds")
+str(NEI)
+```
+```{r scc, cache=TRUE}
+SCC <- readRDS("../data/Source_Classification_Code.rds")
+str(SCC)
+```
+
+### Total PM2.5 emission between 1999 to 2008 in United States
+```{r plot1}
+totalus <- with(NEI, tapply(Emissions, year, sum))
+par(mfrow = c(1,1))
+plot(names(totalus), totalus, type = "l", 
+     ylim = c(min(totalus)-10^5, max(totalus)+10^6),
+     xlim = c(1998, 2009),
+     xlab = "Years", 
+     ylab = "PM2.5 Emission (in tonnes)", 
+     main = "Total PM2.5 emission between 1999 to 2008 in United States")
+text(names(totalus), totalus, 
+     labels = paste(as.integer(totalus), "+"), pos = 3)
+```
+  
+Obviously, we can observe a significant downtrend on total PM2.5 emission in US.  
+  
+### Total PM2.5 emission between 1999 to 2008 in Baltimore City, Maryland
+```{r plot2}
+totalbc <- with(NEI[NEI$fips == "24510",], tapply(Emissions, year, sum))
+par(mfrow = c(1,1))
+plot(names(totalbc), totalbc, type = "l", 
+     ylim = c(min(totalbc)-10^3, max(totalbc)+10^3),
+     xlim = c(1998, 2009),
+     xlab = "Years", 
+     ylab = "PM2.5 Emission (in tonnes)", 
+     main = "Total PM2.5 emission between 1999 to 2008 in Baltimore City, Maryland")
+text(names(totalbc), totalbc, 
+     labels = paste(as.integer(totalbc), "+"), pos = 3)
+```
+  
+Similarly, total PM2.5 emission in Baltimore City shows a gradual drop in comparison with total emission in whole.  
+  
+### Emissions from 1999 to 2008 for Baltimore City by source type
+```{r plot3, message=FALSE}
+library(dplyr)
+emisbc <- NEI %>% filter(fips == "24510") %>%
+        select(Emissions, type, year)
+classify <- emisbc %>% 
+        group_by(type, year) %>%
+        summarize(emissions = sum(Emissions))
+library(ggplot2)
+with(classify, qplot(year, emissions, color = type,
+                     main = "Emissions from 1999 to 2008 for Baltimore City by source type",
+                     xlab = "Years",
+                     ylab = "PM2.5 Emissions (in tonnes)") + 
+             geom_smooth(method = "lm", se = FALSE))
+```
+    
+Generally, all except point emission source types exhibits a downward trend.  
+  
+### Emissions from coal combustion-related sources across United States from 1999 to 2008
+```{r plot4, message=FALSE}
+coalbool <- grepl("Coal", SCC$EI.Sector)
+coaldata <- SCC[coalbool, ]
+merg <- merge(coaldata, NEI, by = "SCC")
+library(dplyr)
+df <- merg %>%
+        select(EI.Sector, year, Emissions) %>%
+        group_by(EI.Sector, year) %>%
+        summarize(emission = sum(Emissions))
+library(ggplot2)
+with(df, qplot(year, emission, color = EI.Sector,
+               main = "Emissions from coal combustion-related sources across United States from 1999 to 2008",
+               xlab = "Years",
+               ylab = "PM2.5 Emissions (in tonnes)") +
+        geom_smooth(method = "lm", se = FALSE))
+```
+  
+The plotting shows differences in trend among coal-related emission, with electric generation stand out from the rest.  
+  
+### Emissions from motor vehicle sources in Baltimore City from 1999 to 2008
+```{r plot5, message=FALSE}
+motorbool <- grepl("Vehicle", SCC$EI.Sector)
+motordata <- SCC[motorbool, ]
+merg <- merge(motordata, NEI[NEI$fips == "24510", ], by = "SCC")
+library(dplyr)
+df <- merg %>%
+        select(EI.Sector, year, Emissions) %>%
+        group_by(EI.Sector, year) %>%
+        summarize(emission = sum(Emissions))
+library(ggplot2)
+with(df, qplot(year, emission, color = EI.Sector,
+               main = "Emissions from motor vehicle sources in Baltimore City from 1999 to 2008",
+               xlab = "Years",
+               ylab = "PM2.5 Emissions (in tonnes)") +
+             geom_smooth(method = "lm", se = FALSE))
+```
+  
+Similarly, the plot shows differences in trend among emissions from different motor vehicle source. The vast changes in diesel heavy duty and gasoline light duty vehicle emission may be due to their popularity and usage.  
+  
+### Emissions from motor vehicle sources in Baltimore City from 1999 to 2008
+```{r plot6, message=FALSE}
+motorbool <- grepl("Vehicle", SCC$EI.Sector)
+motordata <- SCC[motorbool, ]
+merg <- merge(motordata, NEI[grepl("24510|06037", NEI$fips), ], by = "SCC")
+merg$fips <- factor(merg$fips, levels = c("24510", "06037"), labels = c("Baltimore City", "Los Angeles"))
+library(dplyr)
+df <- merg %>%
+        select(fips, year, Emissions) %>%
+        group_by(fips, year) %>%
+        summarize(emission = sum(Emissions))
+bcdiff <- as.integer(df[4,3]-df[1,3])
+ladiff <- as.integer(df[8,3]-df[5,3])
+library(ggplot2)
+ggplot(df, aes(year, emission)) +
+        labs(title = "Emissions from motor vehicle sources in Baltimore City from 1999 to 2008",
+              x = "Years",
+              y = "PM2.5 Emission (in tonnes)") +
+        geom_point(aes(color = fips)) +
+        geom_smooth(aes(color = fips), method = "lm", se = FALSE) +
+        annotate("text", x = 2006, y = 500, label = paste("1999-2008 Diff =", bcdiff)) +
+        annotate("text", x = 2006, y = 3900, label = paste("1999-2008 Diff =", ladiff))
+```
+  
+Again, different cities illustrate huge different in their value and trend on PM2.5 vehicle emission. This could also reflects how developed the city is (at least from the plotting).
+  
