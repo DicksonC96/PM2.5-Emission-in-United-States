@@ -1,9 +1,3 @@
----
-title: 'PM2.5 Emission in United States from 1999 to 2008'
-author: 'DicksonC'
-output: html_document
----
-
 # PM2.5 Emission in United States from 1999 to 2008
 Data source: [EPA National Emissions Inventory](https://www.epa.gov/technical-air-pollution-resources)  
 Project description adapted from https://datascience-enthusiast.com/R/EPA_R.html.  
@@ -18,60 +12,48 @@ For each year and for each type of PM source, the NEI records how many tons of P
 ### Reading in data
 
 ```r
-NEI <- readRDS("../data/summarySCC_PM25.rds")
-```
-
-```
-## Warning in gzfile(file, "rb"): cannot open compressed
-## file '../data/summarySCC_PM25.rds', probable reason 'No
-## such file or directory'
-```
-
-```
-## Error in gzfile(file, "rb"): cannot open the connection
-```
-
-```r
+NEI <- readRDS("./data/summarySCC_PM25.rds")
 str(NEI)
 ```
 
 ```
-## Error in str(NEI): object 'NEI' not found
+## 'data.frame':	6497651 obs. of  6 variables:
+##  $ fips     : chr  "09001" "09001" "09001" "09001" ...
+##  $ SCC      : chr  "10100401" "10100404" "10100501" "10200401" ...
+##  $ Pollutant: chr  "PM25-PRI" "PM25-PRI" "PM25-PRI" "PM25-PRI" ...
+##  $ Emissions: num  15.714 234.178 0.128 2.036 0.388 ...
+##  $ type     : chr  "POINT" "POINT" "POINT" "POINT" ...
+##  $ year     : int  1999 1999 1999 1999 1999 1999 1999 1999 1999 1999 ...
 ```
 
 ```r
-SCC <- readRDS("../data/Source_Classification_Code.rds")
-```
-
-```
-## Warning in gzfile(file, "rb"): cannot open compressed
-## file '../data/Source_Classification_Code.rds', probable
-## reason 'No such file or directory'
-```
-
-```
-## Error in gzfile(file, "rb"): cannot open the connection
-```
-
-```r
+SCC <- readRDS("./data/Source_Classification_Code.rds")
 str(SCC)
 ```
 
 ```
-## Error in str(SCC): object 'SCC' not found
+## 'data.frame':	11717 obs. of  15 variables:
+##  $ SCC                : Factor w/ 11717 levels "10100101","10100102",..: 1 2 3 4 5 6 7 8 9 10 ...
+##  $ Data.Category      : Factor w/ 6 levels "Biogenic","Event",..: 6 6 6 6 6 6 6 6 6 6 ...
+##  $ Short.Name         : Factor w/ 11238 levels "","2,4-D Salts and Esters Prod /Process Vents, 2,4-D Recovery: Filtration",..: 3283 3284 3293 3291 3290 3294 3295 3296 3292 3289 ...
+##  $ EI.Sector          : Factor w/ 59 levels "Agriculture - Crops & Livestock Dust",..: 18 18 18 18 18 18 18 18 18 18 ...
+##  $ Option.Group       : Factor w/ 25 levels "","C/I Kerosene",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Option.Set         : Factor w/ 18 levels "","A","B","B1A",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ SCC.Level.One      : Factor w/ 17 levels "Brick Kilns",..: 3 3 3 3 3 3 3 3 3 3 ...
+##  $ SCC.Level.Two      : Factor w/ 146 levels "","Agricultural Chemicals Production",..: 32 32 32 32 32 32 32 32 32 32 ...
+##  $ SCC.Level.Three    : Factor w/ 1061 levels "","100% Biosolids (e.g., sewage sludge, manure, mixtures of these matls)",..: 88 88 156 156 156 156 156 156 156 156 ...
+##  $ SCC.Level.Four     : Factor w/ 6084 levels "","(NH4)2 SO4 Acid Bath System and Evaporator",..: 4455 5583 4466 4458 1341 5246 5584 5983 4461 776 ...
+##  $ Map.To             : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ Last.Inventory.Year: int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ Created_Date       : Factor w/ 57 levels "","1/27/2000 0:00:00",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Revised_Date       : Factor w/ 44 levels "","1/27/2000 0:00:00",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Usage.Notes        : Factor w/ 21 levels ""," ","includes bleaching towers, washer hoods, filtrate tanks, vacuum pump exhausts",..: 1 1 1 1 1 1 1 1 1 1 ...
 ```
 
 ### Total PM2.5 emission between 1999 to 2008 in United States
 
 ```r
 totalus <- with(NEI, tapply(Emissions, year, sum))
-```
-
-```
-## Error in with(NEI, tapply(Emissions, year, sum)): object 'NEI' not found
-```
-
-```r
 par(mfrow = c(1,1))
 plot(names(totalus), totalus, type = "l", 
      ylim = c(min(totalus)-10^5, max(totalus)+10^6),
@@ -79,20 +61,11 @@ plot(names(totalus), totalus, type = "l",
      xlab = "Years", 
      ylab = "PM2.5 Emission (in tonnes)", 
      main = "Total PM2.5 emission between 1999 to 2008 in United States")
-```
-
-```
-## Error in plot(names(totalus), totalus, type = "l", ylim = c(min(totalus) - : object 'totalus' not found
-```
-
-```r
 text(names(totalus), totalus, 
      labels = paste(as.integer(totalus), "+"), pos = 3)
 ```
 
-```
-## Error in text(names(totalus), totalus, labels = paste(as.integer(totalus), : object 'totalus' not found
-```
+![plot of chunk plot1](figure/plot1-1.png)
   
 Obviously, we can observe a significant downtrend on total PM2.5 emission in US.  
   
@@ -100,13 +73,6 @@ Obviously, we can observe a significant downtrend on total PM2.5 emission in US.
 
 ```r
 totalbc <- with(NEI[NEI$fips == "24510",], tapply(Emissions, year, sum))
-```
-
-```
-## Error in with(NEI[NEI$fips == "24510", ], tapply(Emissions, year, sum)): object 'NEI' not found
-```
-
-```r
 par(mfrow = c(1,1))
 plot(names(totalbc), totalbc, type = "l", 
      ylim = c(min(totalbc)-10^3, max(totalbc)+10^3),
@@ -114,20 +80,11 @@ plot(names(totalbc), totalbc, type = "l",
      xlab = "Years", 
      ylab = "PM2.5 Emission (in tonnes)", 
      main = "Total PM2.5 emission between 1999 to 2008 in Baltimore City, Maryland")
-```
-
-```
-## Error in plot(names(totalbc), totalbc, type = "l", ylim = c(min(totalbc) - : object 'totalbc' not found
-```
-
-```r
 text(names(totalbc), totalbc, 
      labels = paste(as.integer(totalbc), "+"), pos = 3)
 ```
 
-```
-## Error in text(names(totalbc), totalbc, labels = paste(as.integer(totalbc), : object 'totalbc' not found
-```
+![plot of chunk plot2](figure/plot2-1.png)
   
 Similarly, total PM2.5 emission in Baltimore City shows a gradual drop in comparison with total emission in whole.  
   
@@ -137,23 +94,9 @@ Similarly, total PM2.5 emission in Baltimore City shows a gradual drop in compar
 library(dplyr)
 emisbc <- NEI %>% filter(fips == "24510") %>%
         select(Emissions, type, year)
-```
-
-```
-## Error in filter(., fips == "24510"): object 'NEI' not found
-```
-
-```r
 classify <- emisbc %>% 
         group_by(type, year) %>%
         summarize(emissions = sum(Emissions))
-```
-
-```
-## Error in group_by(., type, year): object 'emisbc' not found
-```
-
-```r
 library(ggplot2)
 with(classify, qplot(year, emissions, color = type,
                      main = "Emissions from 1999 to 2008 for Baltimore City by source type",
@@ -162,9 +105,7 @@ with(classify, qplot(year, emissions, color = type,
              geom_smooth(method = "lm", se = FALSE))
 ```
 
-```
-## Error in with(classify, qplot(year, emissions, color = type, main = "Emissions from 1999 to 2008 for Baltimore City by source type", : object 'classify' not found
-```
+![plot of chunk plot3](figure/plot3-1.png)
     
 Generally, all except point emission source types exhibits a downward trend.  
   
@@ -172,41 +113,13 @@ Generally, all except point emission source types exhibits a downward trend.
 
 ```r
 coalbool <- grepl("Coal", SCC$EI.Sector)
-```
-
-```
-## Error in grepl("Coal", SCC$EI.Sector): object 'SCC' not found
-```
-
-```r
 coaldata <- SCC[coalbool, ]
-```
-
-```
-## Error in eval(expr, envir, enclos): object 'SCC' not found
-```
-
-```r
 merg <- merge(coaldata, NEI, by = "SCC")
-```
-
-```
-## Error in merge(coaldata, NEI, by = "SCC"): object 'coaldata' not found
-```
-
-```r
 library(dplyr)
 df <- merg %>%
         select(EI.Sector, year, Emissions) %>%
         group_by(EI.Sector, year) %>%
         summarize(emission = sum(Emissions))
-```
-
-```
-## Error in select(., EI.Sector, year, Emissions): object 'merg' not found
-```
-
-```r
 library(ggplot2)
 with(df, qplot(year, emission, color = EI.Sector,
                main = "Emissions from coal combustion-related sources across United States from 1999 to 2008",
@@ -215,9 +128,7 @@ with(df, qplot(year, emission, color = EI.Sector,
         geom_smooth(method = "lm", se = FALSE))
 ```
 
-```
-## Error in eval(substitute(expr), data, enclos = parent.frame()): invalid 'envir' argument of type 'closure'
-```
+![plot of chunk plot4](figure/plot4-1.png)
   
 The plotting shows differences in trend among coal-related emission, with electric generation stand out from the rest.  
   
@@ -225,41 +136,13 @@ The plotting shows differences in trend among coal-related emission, with electr
 
 ```r
 motorbool <- grepl("Vehicle", SCC$EI.Sector)
-```
-
-```
-## Error in grepl("Vehicle", SCC$EI.Sector): object 'SCC' not found
-```
-
-```r
 motordata <- SCC[motorbool, ]
-```
-
-```
-## Error in eval(expr, envir, enclos): object 'SCC' not found
-```
-
-```r
 merg <- merge(motordata, NEI[NEI$fips == "24510", ], by = "SCC")
-```
-
-```
-## Error in merge(motordata, NEI[NEI$fips == "24510", ], by = "SCC"): object 'motordata' not found
-```
-
-```r
 library(dplyr)
 df <- merg %>%
         select(EI.Sector, year, Emissions) %>%
         group_by(EI.Sector, year) %>%
         summarize(emission = sum(Emissions))
-```
-
-```
-## Error in select(., EI.Sector, year, Emissions): object 'merg' not found
-```
-
-```r
 library(ggplot2)
 with(df, qplot(year, emission, color = EI.Sector,
                main = "Emissions from motor vehicle sources in Baltimore City from 1999 to 2008",
@@ -268,9 +151,7 @@ with(df, qplot(year, emission, color = EI.Sector,
              geom_smooth(method = "lm", se = FALSE))
 ```
 
-```
-## Error in eval(substitute(expr), data, enclos = parent.frame()): invalid 'envir' argument of type 'closure'
-```
+![plot of chunk plot5](figure/plot5-1.png)
   
 Similarly, the plot shows differences in trend among emissions from different motor vehicle source. The vast changes in diesel heavy duty and gasoline light duty vehicle emission may be due to their popularity and usage.  
   
@@ -278,65 +159,16 @@ Similarly, the plot shows differences in trend among emissions from different mo
 
 ```r
 motorbool <- grepl("Vehicle", SCC$EI.Sector)
-```
-
-```
-## Error in grepl("Vehicle", SCC$EI.Sector): object 'SCC' not found
-```
-
-```r
 motordata <- SCC[motorbool, ]
-```
-
-```
-## Error in eval(expr, envir, enclos): object 'SCC' not found
-```
-
-```r
 merg <- merge(motordata, NEI[grepl("24510|06037", NEI$fips), ], by = "SCC")
-```
-
-```
-## Error in merge(motordata, NEI[grepl("24510|06037", NEI$fips), ], by = "SCC"): object 'motordata' not found
-```
-
-```r
 merg$fips <- factor(merg$fips, levels = c("24510", "06037"), labels = c("Baltimore City", "Los Angeles"))
-```
-
-```
-## Error in factor(merg$fips, levels = c("24510", "06037"), labels = c("Baltimore City", : object 'merg' not found
-```
-
-```r
 library(dplyr)
 df <- merg %>%
         select(fips, year, Emissions) %>%
         group_by(fips, year) %>%
         summarize(emission = sum(Emissions))
-```
-
-```
-## Error in select(., fips, year, Emissions): object 'merg' not found
-```
-
-```r
 bcdiff <- as.integer(df[4,3]-df[1,3])
-```
-
-```
-## Error in df[4, 3]: object of type 'closure' is not subsettable
-```
-
-```r
 ladiff <- as.integer(df[8,3]-df[5,3])
-```
-
-```
-## Error in df[8, 3]: object of type 'closure' is not subsettable
-```
-
-```r
 library(ggplot2)
 ggplot(df, aes(year, emission)) +
         labs(title = "Emissions from motor vehicle sources in Baltimore City from 1999 to 2008",
@@ -348,10 +180,7 @@ ggplot(df, aes(year, emission)) +
         annotate("text", x = 2006, y = 3900, label = paste("1999-2008 Diff =", ladiff))
 ```
 
-```
-## Error:   You're passing a function as global data.
-##   Have you misspelled the `data` argument in `ggplot()`
-```
+![plot of chunk plot6](figure/plot6-1.png)
   
 Again, different cities illustrate huge different in their value and trend on PM2.5 vehicle emission. This could also reflects how developed the city is (at least from the plotting).
   
